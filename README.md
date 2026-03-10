@@ -20,8 +20,26 @@ uts-asj-edi/
 ├── .env                 # Konfigurasi database & storage (Environment Variables)
 └── docker-compose.yml   # Konfigurasi utama seluruh container
 
-Service,Software,Deskripsi
-Frontend,Nginx,Menampilkan UI web di port 80.
-Backend,FastAPI,Menangani logic API di port 8080.
-Database,PostgreSQL,Menyimpan metadata (DB: uts_asj_db).
-Storage,MinIO,Menyimpan file foto (Bucket: tugas-herdi).
+⚙️ Cara Instalasi & Penggunaan
+Pastikan Docker dan Docker Compose sudah terpasang di Debian.
+
+Masuk ke direktori proyek:
+
+Bash
+cd /home/debian/uts-asj-edi
+Jalankan seluruh layanan:
+
+Bash
+docker-compose up -d
+Akses melalui browser:
+
+Aplikasi: http://192.168.1.11
+
+Dashboard MinIO: http://192.168.1.11:9001
+
+👤 Identitas
+Nama: Herdi
+
+Repository: Sahhyyyx1310/uts-asj-herdi
+
+Tugas: Ujian Tengah Semester - Administrasi Sistem Jaringan
