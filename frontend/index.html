@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UTS Herdi - Pengumpulan Tugas</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #eee; }
+        .box { background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; }
+        input { display: block; width: 95%; margin: 10px 0; padding: 8px; }
+        button { padding: 10px; cursor: pointer; border: none; border-radius: 5px; }
+        .btn-add { background: green; color: white; width: 100%; }
+        .btn-edit { background: orange; color: white; }
+        .btn-del { background: red; color: white; }
+        .user { border-bottom: 1px solid #ccc; padding: 10px; display: flex; align-items: center; justify-content: space-between; }
+        img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2 id="formTitle">Tambah Tugas Baru</h2>
+        <form id="userForm">
+            <input type="text" id="name" placeholder="Nama Lengkap" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="file" id="photo" accept="image/*">
+            <button type="submit" class="btn-add" id="submitBtn">Kirim Tugas</button>
+            <button type="button" id="cancelBtn" style="display:none; background:#ccc; margin-top:5px; width:100%" onclick="resetForm()">Batal</button>
+        </form>
+
+        <h3>Daftar Tugas Terkumpul</h3>
+        <div id="userList"></div>
+    </div>
+
+    <script>
+        const API_URL = "http://192.168.1.11:8080"; // GANTI KE IP DEBIAN JIKA PAKAI VM
+        const MINIO_URL = "http://192.168.1.11:9000"; 
+        let isEdit = false;
+        let editId = null;
+
+        async function load() {
+            const res = await fetch(`${API_URL}/users`);
+            const data = await res.json();
+            const list = document.getElementById('userList');
+            list.innerHTML = '';
+            data.forEach(u => {
+                list.innerHTML += `
+                <div class="user">
+                    <img src="${MINIO_URL}${u.photo_url}" onerror="this.src='https://via.placeholder.com/50'">
+                    <div><b>${u.name}</b><br><small>${u.email}</small></div>
+                    <div>
+                        <button class="btn-edit" onclick="prepareEdit(${u.id},'${u.name}','${u.email}')">Edit</button>
+                        <button class="btn-del" onclick="del(${u.id})">Hapus</button>
+                    </div>
+                </div>`;
+            });
+        }
+
+        document.getElementById('userForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const fd = new FormData();
+            fd.append('name', document.getElementById('name').value);
+            fd.append('email', document.getElementById('email').value);
+            if(document.getElementById('photo').files[0]) fd.append('file', document.getElementById('photo').files[0]);
+
+            const url = isEdit ? `${API_URL}/users/${editId}` : `${API_URL}/users`;
+            const method = isEdit ? 'PUT' : 'POST';
+
+            await fetch(url, { method: method, body: fd });
+            resetForm();
+            load();
+        };
+
+        function prepareEdit(id, name, email) {
+            isEdit = true; editId = id;
+            document.getElementById('name').value = name;
+            document.getElementById('email').value = email;
+            document.getElementById('submitBtn').innerText = "Simpan Perubahan";
+            document.getElementById('formTitle').innerText = "Edit Data";
+            document.getElementById('cancelBtn').style.display = "block";
+        }
+
+        function resetForm() {
+            isEdit = false; editId = null;
+            document.getElementById('userForm').reset();
+            document.getElementById('submitBtn').innerText = "Kirim Tugas";
+            document.getElementById('formTitle').innerText = "Tambah Tugas Baru";
+            document.getElementById('cancelBtn').style.display = "none";
+        }
+
+        async function del(id) {
+            if(confirm('Hapus data?')) {
+                await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
+                load();
+            }
+        }
+        load();
+    </script>
+</body>
+</html>
